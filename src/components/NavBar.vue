@@ -1,10 +1,14 @@
 <template>
   <nav class="navbar navbar-expand-lg navbar-dark bg-primary-custom">
     <div class="container-fluid">
-      <!-- Icono + Título -->
+      <!-- Icono + Título + Beta -->
       <a class="navbar-brand d-flex align-items-center" href="#">
         <i class="bi bi-shield-exclamation me-2 fs-4"></i>
         Bitácora de Incidentes
+        <span class="beta-tag ms-2 d-flex align-items-center">
+          <i class="bi bi-flask me-1"></i>
+          <span>Beta</span>
+        </span>
       </a>
 
       <button
@@ -35,5 +39,3 @@
     </div>
   </nav>
 </template>
-
-<script setup></script>

@@ -27,7 +27,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(incident, index) in incidents" :key="index">
+          <tr v-for="(incident, index) in currentPageIncidents" :key="index">
             <td>{{ incident.title }}</td>
             <td>{{ incident.area }}</td>
             <td>{{ incident.date }}</td>
@@ -44,16 +44,15 @@
               </span>
             </td>
             <td>
-              <router-link :to="`/incidente/${index}`" class="btn btn-sm btn-outline-info">
+              <router-link :to="`/incidente/${index}`" class="btn btn-sm btn-outline-info me-2">
                 Ver Detalles
               </router-link>
               <router-link :to="`/editar/${index}`" class="btn btn-sm btn-outline-warning me-2">
                 <i class="bi bi-pencil-square me-1"></i>Editar
               </router-link>
               <button @click="generatePDF(incident)" class="btn btn-sm btn-outline-primary me-2">
-                <i class="bi bi-file-earmark-pdf"></i> Exportar PDF
+                <i class="bi bi-file-earmark-pdf"></i> PDF
               </button>
-              <!-- Opcional: Botón de eliminar -->
               <button @click="deleteIncident(index)" class="btn btn-sm btn-outline-danger">
                 <i class="bi bi-trash"></i>
               </button>
@@ -61,24 +60,43 @@
           </tr>
         </tbody>
       </table>
-    </div>
 
-    <!-- Botón para agregar nuevo incidente -->
-    <div class="text-end mt-3">
-      <router-link to="/agregar" class="btn btn-primary-custom">
-        <i class="bi bi-plus-circle me-2"></i>Agregar Nuevo Incidente
-      </router-link>
+      <!-- Paginación -->
+      <nav aria-label="Paginación de incidentes" class="mt-4">
+        <ul class="pagination justify-content-center">
+          <li class="page-item" :class="{ disabled: currentPage === 1 }">
+            <a class="page-link" href="#" @click.prevent="prevPage">Anterior</a>
+          </li>
+          <li
+            v-for="page in totalPages"
+            :key="page"
+            class="page-item"
+            :class="{ active: currentPage === page }"
+          >
+            <a class="page-link" href="#" @click.prevent="goToPage(page)">
+              {{ page }}
+            </a>
+          </li>
+          <li class="page-item" :class="{ disabled: currentPage === totalPages }">
+            <a class="page-link" href="#" @click.prevent="nextPage">Siguiente</a>
+          </li>
+        </ul>
+      </nav>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { jsPDF } from 'jspdf'
 import { saveAs } from 'file-saver'
 import organizationData from '@/services/organizationService'
 
 const incidents = ref([])
+
+// Configuración de paginación
+const currentPage = ref(1)
+const itemsPerPage = 5
 
 // Cargar incidentes desde localStorage
 onMounted(() => {
@@ -167,6 +185,27 @@ function generatePDF(incident) {
   // Guardar archivo
   const blob = doc.output('blob')
   saveAs(blob, `incidente_${incident.title.replace(/\s+/g, '_')}.pdf`)
+}
+
+// Paginación
+const currentPageIncidents = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage
+  const end = start + itemsPerPage
+  return incidents.value.slice(start, end)
+})
+
+const totalPages = computed(() => Math.ceil(incidents.value.length / itemsPerPage))
+
+function prevPage() {
+  if (currentPage.value > 1) currentPage.value--
+}
+
+function nextPage() {
+  if (currentPage.value < totalPages.value) currentPage.value++
+}
+
+function goToPage(page) {
+  currentPage.value = page
 }
 </script>
 
