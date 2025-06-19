@@ -1,0 +1,36 @@
+/* Importar Google Font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+/* Estilo global */
+html,
+body {
+  height: 100%;
+}
+
+#app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #f8f9fa;
+  color: #212529;
+}
+
+.text-primary-custom {
+  color: #04a1e9 !important;
+}
+
+.bg-primary-custom {
+  background-color: #04a1e9 !important;
+}
+
+.btn-primary-custom {
+  background-color: #04a1e9;
+  border-color: #04a1e9;
+}
+.btn-primary-custom:hover {
+  background-color: #0386c6;
+  border-color: #0386c6;
+}
