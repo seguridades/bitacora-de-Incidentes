@@ -22,6 +22,7 @@
             <th>Área</th>
             <th>Fecha</th>
             <th>Hora</th>
+            <th>Lugar de Evidencia</th>
             <th>Nivel de Riesgo</th>
             <th>Acciones</th>
           </tr>
@@ -32,6 +33,7 @@
             <td>{{ incident.area }}</td>
             <td>{{ incident.date }}</td>
             <td>{{ incident.time }}</td>
+            <td>{{ incident.evidenceLocation || '-' }}</td>
             <td>
               <span
                 :class="{
@@ -83,6 +85,16 @@
         </ul>
       </nav>
     </div>
+
+    <hr />
+    <!-- Botón para exportar todos los incidentes -->
+    <button @click="exportAllToPDF" class="btn btn-outline-success ms-2">
+      <i class="bi bi-file-earmark-pdf me-2"></i>Exportar Todos a PDF
+    </button>
+    <!-- Botón para exportar todos los incidentes a CSV -->
+    <button @click="exportAllToCSV" class="btn btn-outline-secondary ms-2">
+      <i class="bi bi-filetype-csv me-2"></i>Exportar Todos a CSV
+    </button>
   </div>
 </template>
 
@@ -206,6 +218,121 @@ function nextPage() {
 
 function goToPage(page) {
   currentPage.value = page
+}
+
+function exportAllToCSV() {
+  if (!incidents.value || incidents.value.length === 0) {
+    alert('No hay incidentes para exportar.')
+    return
+  }
+
+  // Encabezados del CSV
+  const headers = [
+    'Título',
+    'Área',
+    'Persona afectada',
+    'Fecha',
+    'Hora',
+    'Tipo de ataque',
+    'Plataforma',
+    'URL',
+    'Nivel de riesgo',
+    'Lugar de Evidencia',
+    'Descripción',
+    'Acciones de seguimiento',
+    'Notas',
+  ]
+
+  // Convertir cada incidente en una fila CSV
+  const rows = incidents.value.map((incident) => [
+    incident.title,
+    incident.area,
+    incident.personAffected,
+    incident.date,
+    incident.time,
+    incident.attackType,
+    incident.platform,
+    incident.url ? `"${incident.url}"` : '',
+    incident.riskLevel,
+    incident.evidenceLocation || '',
+    incident.description ? `"${incident.description.replace(/"/g, '""')}"` : '',
+    incident.followUp ? `"${incident.followUp.replace(/"/g, '""')}"` : '',
+    incident.notes ? `"${incident.notes.replace(/"/g, '""')}"` : '',
+  ])
+
+  // Unir todo como CSV
+  const csvContent = [
+    headers.join(',') + '\r\n' + rows.map((row) => row.join(',')).join('\r\n'),
+  ].join('\r\n')
+
+  // Crear blob y descargar
+  const blob = new Blob(['\uFEFF', csvContent], { type: 'text/csv;charset=utf-8;' })
+  saveAs(blob, 'bitacora_incidentes.csv')
+}
+
+// Generar PDF con todos los incidentes
+function exportAllToPDF() {
+  const doc = new jsPDF()
+
+  // Datos de la organización
+  const org = organizationData.getOrganization()
+
+  // Título del documento
+  doc.setFontSize(18)
+  doc.text('Bitácora Completa de Incidentes', 10, 20)
+
+  // Información de la organización
+  doc.setFontSize(10)
+  doc.setTextColor(100)
+  doc.text(`${org.organizationName || 'Nombre de organización'}`, 10, 30)
+  doc.text(`Responsable: ${org.mainResponsible || 'Sin responsable'}`, 10, 36)
+  doc.setTextColor(0)
+
+  let y = 50
+
+  incidents.value.forEach((incident, index) => {
+    if (index !== 0) {
+      doc.addPage()
+      y = 20
+    }
+
+    // Título del incidente
+    doc.setFontSize(14)
+    doc.text(`Incidente: ${incident.title}`, 10, y)
+    y += 10
+
+    // Datos del incidente
+    const lineHeight = 7
+
+    function addLine(label, value) {
+      if (value) {
+        doc.setFontSize(12)
+        doc.text(label, 10, y)
+        doc.setFontSize(10)
+        doc.text(value, 10, y + lineHeight / 2 + 1)
+        y += lineHeight * 2
+      }
+    }
+
+    addLine('Área afectada:', incident.area)
+    addLine('Persona afectada:', incident.personAffected)
+    addLine('Fecha:', incident.date)
+    addLine('Hora:', incident.time)
+    addLine('Tipo de ataque:', incident.attackType)
+    addLine('Plataforma:', incident.platform)
+    addLine('URL:', incident.url)
+    addLine('Nivel de riesgo:', incident.riskLevel)
+    addLine('Lugar de Evidencia:', incident.evidenceLocation)
+    addLine('Descripción:', incident.description)
+    addLine('Acciones de seguimiento:', incident.followUp)
+    addLine('Notas:', incident.notes)
+
+    y += 10
+  })
+
+  // Guardar archivo
+  const blob = doc.output('blob')
+  saveAs(blob, `bitacora_completa.pdf`)
 }
 </script>
 

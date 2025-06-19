@@ -94,14 +94,17 @@
       </div>
 
       <!-- Captura de pantalla -->
+      <!-- Lugar de evidencia -->
       <div class="mb-3">
-        <label for="screenshot" class="form-label">Captura de Pantalla</label>
+        <label for="evidenceLocation" class="form-label"
+          >Lugar de Evidencia (carpeta, equipo, etc.)</label
+        >
         <input
-          @change="handleImageUpload"
-          type="file"
-          accept="image/*"
-          id="screenshot"
+          v-model="incident.evidenceLocation"
+          type="text"
+          id="evidenceLocation"
           class="form-control"
+          placeholder="Ej: Carpeta 'logs', Equipo 192.168.1.100"
         />
       </div>
 
@@ -203,16 +206,6 @@ function updatePeople() {
 }
 
 // Manejar carga de imagen (captura de pantalla)
-function handleImageUpload(event) {
-  const file = event.target.files[0]
-  if (file) {
-    const reader = new FileReader()
-    reader.onload = function (e) {
-      incident.value.screenshot = e.target.result // Base64
-    }
-    reader.readAsDataURL(file)
-  }
-}
 
 // Guardar incidente
 function saveIncident() {
